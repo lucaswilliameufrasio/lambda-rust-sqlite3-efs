@@ -1,0 +1,31 @@
+service: lambda-rust-sqlite3-efs
+
+provider:
+  architecture: arm64
+  name: aws
+  memorySize: 128
+  runtime: provided.al2
+  region: us-east-1
+  timeout: 7
+  logRetentionInDays: 3
+  environment:
+    RUST_LOG: info
+
+package:
+  patterns:
+    - '!./**'
+    - ./bootstrap
+
+functions:
+  api:
+    handler: bootstrap
+    layers:
+      - arn:aws:lambda:${self:provider.region}:753240598075:layer:LambdaAdapterLayerArm64:13
+    events:
+      - http:
+          path: /
+          method: ANY
+      - http:
+          path: /{proxy+}
+          method: ANY
+        
