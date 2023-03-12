@@ -1,12 +1,18 @@
 init:
 	cargo install cargo-binstall
 	cargo binstall cargo-watch
+	cargo install sqlx-cli --no-default-features --features native-tls,sqlite
+	sqlx db create
 	cargo install --path .
 PHONY: init
 
 watch:
 	cargo watch -x 'run'
 PHONY: watch
+
+set-env:
+	export DATABASE_URL="sqlite:users.db"
+PHONY: set-env
 
 dev:
 	docker run --rm --interactive --tty \

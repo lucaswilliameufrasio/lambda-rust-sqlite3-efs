@@ -8,3 +8,5 @@ target/
 
 .serverless
 **/bootstrap
+users.db*
+.env
