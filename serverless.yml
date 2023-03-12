@@ -8,8 +8,18 @@ provider:
   region: us-east-1
   timeout: 7
   logRetentionInDays: 3
+  iam:
+    role:
+      statements:
+        # Allow functions to mount, write and gives root access
+        - Effect: Allow
+          Action: 
+            - 'elasticfilesystem:ClientMount'
+            - 'elasticfilesystem:ClientWrite'
+          Resource: ${ssm:/lambda-rust-sqlite3-efs/default/EFS_ARN}
   environment:
     RUST_LOG: info
+    DATABASE_PATH: /mnt/volume/users.db
 
 package:
   patterns:
@@ -19,6 +29,9 @@ package:
 functions:
   api:
     handler: bootstrap
+    fileSystemConfig:
+      localMountPath: /mnt/volume
+      arn: ${ssm:/lambda-rust-sqlite3-efs/default/EFS_AP_ARN}
     layers:
       - arn:aws:lambda:${self:provider.region}:753240598075:layer:LambdaAdapterLayerArm64:13
     events:
