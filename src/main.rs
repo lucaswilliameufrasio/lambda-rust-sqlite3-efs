@@ -40,6 +40,8 @@ async fn main() {
 
     let state = bootstrap().await;
 
+    sqlx::migrate!().run(&state.pool).await.unwrap();
+
     // build our application with a route
     let app = Router::new()
         .route("/", get(root))
@@ -51,11 +53,11 @@ async fn main() {
 
     let port = std::env::var("PORT").expect("Application port not defined");
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], port.parse().unwrap()));
+    let address = SocketAddr::from(([0, 0, 0, 0], port.parse().unwrap()));
 
-    tracing::debug!("Started listening on {}", addr);
+    tracing::debug!("Started listening on {}", address);
 
-    axum::Server::bind(&addr)
+    axum::Server::bind(&address)
         .serve(app.into_make_service())
         .await
         .unwrap();
@@ -174,4 +176,3 @@ impl IntoResponse for MyError {
         (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
     }
 }
-
