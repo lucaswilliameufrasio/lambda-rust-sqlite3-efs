@@ -32,5 +32,5 @@ build:
         --volume $$PWD:/app \
         --env CARGO_HOME=/.cargo \
   		calavera/cargo-lambda cargo lambda build --release $(CARGO_LAMBDA_FLAGS)
-	cp  ./target/lambda/rust-axum-lambda/bootstrap bootstrap
+	cp  ./target/lambda/lambda-rust-sqlite3-efs/bootstrap bootstrap
 .PHONY: build
