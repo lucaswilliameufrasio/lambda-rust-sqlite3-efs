@@ -17,6 +17,9 @@ provider:
             - 'elasticfilesystem:ClientMount'
             - 'elasticfilesystem:ClientWrite'
           Resource: ${ssm:/lambda-rust-sqlite3-efs/default/EFS_ARN}
+  vpc:
+    securityGroupIds: ${ssm:/lambda-rust-sqlite3-efs/default/VPC_SG_IDS}
+    subnetIds: ${ssm:/lambda-rust-sqlite3-efs/default/VPC_SUBNET_IDS}
   environment:
     RUST_LOG: info
     DATABASE_PATH: /mnt/volume/users.db
@@ -33,7 +36,7 @@ functions:
       localMountPath: /mnt/volume
       arn: ${ssm:/lambda-rust-sqlite3-efs/default/EFS_AP_ARN}
     layers:
-      - arn:aws:lambda:${self:provider.region}:753240598075:layer:LambdaAdapterLayerArm64:13
+      - arn:aws:lambda:us-east-1:753240598075:layer:LambdaAdapterLayerArm64:16
     events:
       - http:
           path: /
