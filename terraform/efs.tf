@@ -1,5 +1,5 @@
 resource "aws_efs_file_system" "foo" {
-  creation_token = "any-creation-token-name-just-wanna-test"
+  creation_token = "${local.prefix}-any-creation-token-name-just-wanna-test"
 
   tags = merge(
     local.tags,
