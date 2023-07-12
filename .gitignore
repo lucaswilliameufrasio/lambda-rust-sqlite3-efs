@@ -10,3 +10,4 @@ target/
 **/bootstrap
 users.db*
 .env
+tfplan
