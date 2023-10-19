@@ -20,7 +20,7 @@ resource "aws_security_group" "lambda" {
 
 resource "aws_subnet" "default" {
   vpc_id                  = data.aws_vpc.default.id
-  cidr_block              = "172.31.100.0/24"
+  cidr_block              = "172.31.101.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = false
 
