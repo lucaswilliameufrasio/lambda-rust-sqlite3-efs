@@ -22,6 +22,8 @@ provider:
     subnetIds: ${ssm:/lambda-rust-sqlite3-efs/default/VPC_SUBNET_IDS}
   environment:
     RUST_LOG: info
+    PORT: 8080
+    DATABASE_URL: sqlite:/mnt/volume/users.db
     DATABASE_PATH: /mnt/volume/users.db
 
 package:
