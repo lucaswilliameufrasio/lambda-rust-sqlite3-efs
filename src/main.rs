@@ -8,10 +8,13 @@ use axum::{
 use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::{fs, net::SocketAddr, sync::Arc};
 use tracing::log::LevelFilter;
-use std::{net::SocketAddr, sync::Arc, fs};
 
-use sqlx::{sqlite::{SqlitePool, SqliteConnectOptions}, Pool, Row, Sqlite, ConnectOptions};
+use sqlx::{
+    sqlite::{SqliteConnectOptions, SqlitePool},
+    ConnectOptions, Pool, Row, Sqlite,
+};
 
 fn set_default_env_var(key: &str, value: &str) {
     if std::env::var(key).is_err() {
@@ -22,8 +25,7 @@ fn set_default_env_var(key: &str, value: &str) {
 async fn bootstrap() -> Arc<AppState> {
     let database_url =
         std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:users.db".to_string());
-    let database_path =
-        std::env::var("DATABASE_PATH").unwrap_or_else(|_| "./users.db".to_string());
+    let database_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "./users.db".to_string());
 
     let file_metadata = fs::metadata(database_path.clone());
 
@@ -33,7 +35,6 @@ async fn bootstrap() -> Arc<AppState> {
             let _ = fs::File::create(database_path);
         }
     }
-    
 
     let mut connection_options: SqliteConnectOptions = database_url.parse().unwrap();
     connection_options.log_statements(LevelFilter::Off);
@@ -41,7 +42,6 @@ async fn bootstrap() -> Arc<AppState> {
     let pool = SqlitePool::connect_with(connection_options)
         .await
         .expect("Failed to connect to database");
-
 
     let state = Arc::new(AppState { pool });
 
@@ -59,8 +59,9 @@ async fn main() {
 
     sqlx::migrate!().run(&state.pool).await.unwrap();
 
-    let _ = sqlx::query("pragma journal_mode = WAL;").execute(&state.pool)
-    .await;
+    let _ = sqlx::query("pragma journal_mode = WAL;")
+        .execute(&state.pool)
+        .await;
 
     // build our application with a route
     let app = Router::new()
