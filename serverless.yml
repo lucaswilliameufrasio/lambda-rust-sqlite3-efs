@@ -1,7 +1,7 @@
 service: lambda-rust-sqlite3-efs
 
 provider:
-  architecture: arm64
+  architecture: x86_64
   name: aws
   memorySize: 128
   runtime: provided.al2
@@ -36,7 +36,7 @@ functions:
       localMountPath: /mnt/volume
       arn: ${ssm:/lambda-rust-sqlite3-efs/default/EFS_AP_ARN}
     layers:
-      - arn:aws:lambda:${self:provider.region}:753240598075:layer:LambdaAdapterLayerArm64:16
+      - arn:aws:lambda:${self:provider.region}:753240598075:layer:LambdaAdapterLayerX86:17
     events:
       - http:
           path: /
