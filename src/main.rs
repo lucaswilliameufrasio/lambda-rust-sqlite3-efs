@@ -27,9 +27,13 @@ async fn bootstrap() -> Arc<AppState> {
 
     let _ = File::create(database_path).await;
 
-    let pool = SqlitePool::connect(database_url.as_str())
+    let mut connection_options: SqliteConnectOptions = database_url.parse().unwrap();
+    connection_options.log_statements(LevelFilter::Off);
+
+    let pool = SqlitePool::connect_with(connection_options)
         .await
         .expect("Failed to connect to database");
+
 
     let state = Arc::new(AppState { pool });
 
