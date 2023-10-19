@@ -2,6 +2,8 @@ init:
 	cargo install cargo-binstall
 	cargo binstall cargo-watch
 	cargo install sqlx-cli --no-default-features --features native-tls,sqlite
+	cargo install cargo-edit
+	cargo install cargo-upgrades
 	sqlx db create
 	cargo install --path .
 PHONY: init
