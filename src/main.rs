@@ -59,6 +59,9 @@ async fn main() {
 
     sqlx::migrate!().run(&state.pool).await.unwrap();
 
+    let _ = sqlx::query("pragma journal_mode = WAL;").execute(&state.pool)
+    .await;
+
     // build our application with a route
     let app = Router::new()
         .route("/", get(root))
