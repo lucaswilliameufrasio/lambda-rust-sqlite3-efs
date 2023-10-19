@@ -23,6 +23,12 @@ sqlx migrate revert
 sqlx migrate add -r add_i_dont_know_table
 ```
 
+## Just run the commands below to deploy the app after provisioning all infrastructure required using Terraform
+```
+make build
+npx serverless deploy
+```
+
 ## Just use AWS DataSync to backup the database and be happy
 
 https://repost.aws/knowledge-center/datasync-transfer-efs-s3
