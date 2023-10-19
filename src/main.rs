@@ -9,6 +9,7 @@ use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::{net::SocketAddr, sync::Arc};
+use tokio::fs::File;
 
 use sqlx::{sqlite::SqlitePool, Pool, Row, Sqlite};
 
@@ -21,6 +22,10 @@ fn set_default_env_var(key: &str, value: &str) {
 async fn bootstrap() -> Arc<AppState> {
     let database_url =
         std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:users.db".to_string());
+    let database_path =
+        std::env::var("DATABASE_PATH").unwrap_or_else(|_| "./users.db".to_string());
+
+    let _ = File::create(database_path).await;
 
     let pool = SqlitePool::connect(database_url.as_str())
         .await
