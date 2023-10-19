@@ -36,10 +36,9 @@ async fn bootstrap() -> Arc<AppState> {
         }
     }
 
-    let mut connection_options: SqliteConnectOptions = database_url.parse().unwrap();
-    connection_options.log_statements(LevelFilter::Off);
+    let connection_options: SqliteConnectOptions = database_url.parse().unwrap();
 
-    let pool = SqlitePool::connect_with(connection_options)
+    let pool = SqlitePool::connect_with(connection_options.log_statements(LevelFilter::Off))
         .await
         .expect("Failed to connect to database");
 
