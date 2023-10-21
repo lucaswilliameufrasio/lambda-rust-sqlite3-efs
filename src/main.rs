@@ -8,6 +8,7 @@ use axum::{
 use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use tokio::signal;
 use std::{fs, net::SocketAddr, sync::Arc};
 use tracing::log::LevelFilter;
 
@@ -47,6 +48,38 @@ async fn bootstrap() -> Arc<AppState> {
     state
 }
 
+async fn shutdown_signal(pool: &Pool<Sqlite>) {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install SIGTERM signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {
+            println!("Closing all remaining connections after CTRL+C");
+            pool.close().await;
+        },
+        _ = terminate => {
+            println!("Closing all remaining connections after SIGTERM");
+            pool.close().await;
+        },
+    }
+
+    println!("signal received, starting graceful shutdown");
+}
+
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
@@ -67,7 +100,7 @@ async fn main() {
         .route("/", get(root))
         .route("/users", get(load_users))
         .route("/users", post(create_user))
-        .with_state(state);
+        .with_state(state.clone());
 
     set_default_env_var("PORT", "9989");
 
@@ -79,6 +112,7 @@ async fn main() {
 
     axum::Server::bind(&address)
         .serve(app.into_make_service())
+        .with_graceful_shutdown(shutdown_signal(&state.pool))
         .await
         .unwrap();
 }
