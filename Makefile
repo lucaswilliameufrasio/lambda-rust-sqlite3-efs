@@ -24,7 +24,7 @@ dev:
         --env CARGO_HOME=/.cargo \
 		--env PORT=9000 \
   		-p 9000:9000 \
-  		calavera/cargo-lambda cargo lambda watch
+  		ghcr.io/cargo-lambda/cargo-lambda cargo lambda watch
 .PHONY: dev
 
 build:
@@ -33,6 +33,6 @@ build:
         --volume $${CARGO_HOME:-$$HOME/.cargo}:/.cargo \
         --volume $$PWD:/app \
         --env CARGO_HOME=/.cargo \
-  		calavera/cargo-lambda cargo lambda build --release $(CARGO_LAMBDA_FLAGS)
+  		ghcr.io/cargo-lambda/cargo-lambda cargo lambda build --release $(CARGO_LAMBDA_FLAGS)
 	cp  ./target/lambda/lambda-rust-sqlite3-efs/bootstrap bootstrap
 .PHONY: build
