@@ -8,8 +8,8 @@ use axum::{
 use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tokio::signal;
 use std::{fs, net::SocketAddr, sync::Arc};
+use tokio::signal;
 use tracing::log::LevelFilter;
 
 use sqlx::{
@@ -48,7 +48,7 @@ async fn bootstrap() -> Arc<AppState> {
     state
 }
 
-async fn shutdown_signal(pool: &Pool<Sqlite>) {
+async fn shutdown_signal(state: Arc<AppState>) {
     let ctrl_c = async {
         signal::ctrl_c()
             .await
@@ -69,11 +69,11 @@ async fn shutdown_signal(pool: &Pool<Sqlite>) {
     tokio::select! {
         _ = ctrl_c => {
             println!("Closing all remaining connections after CTRL+C");
-            pool.close().await;
+            state.pool.close().await;
         },
         _ = terminate => {
             println!("Closing all remaining connections after SIGTERM");
-            pool.close().await;
+            state.pool.close().await;
         },
     }
 
@@ -107,12 +107,10 @@ async fn main() {
     let port = std::env::var("PORT").expect("Application port not defined");
 
     let address = SocketAddr::from(([0, 0, 0, 0], port.parse().unwrap()));
+    let listener = tokio::net::TcpListener::bind(address).await.unwrap();
 
-    tracing::debug!("Started listening on {}", address);
-
-    axum::Server::bind(&address)
-        .serve(app.into_make_service())
-        .with_graceful_shutdown(shutdown_signal(&state.pool))
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal(state))
         .await
         .unwrap();
 }
