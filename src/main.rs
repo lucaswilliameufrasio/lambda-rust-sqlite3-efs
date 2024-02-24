@@ -108,7 +108,7 @@ async fn main() {
 
     let address = SocketAddr::from(([0, 0, 0, 0], port.parse().unwrap()));
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
-
+    tracing::info!("Listening on {}", address);
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal(state))
         .await
