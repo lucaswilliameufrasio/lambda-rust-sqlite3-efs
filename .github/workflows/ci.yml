@@ -69,7 +69,9 @@ jobs:
         run: cargo install sqlx-cli --no-default-features --features native-tls,sqlite
 
       - name: Run migrations
-        run: sqlx migrate run
+        run: |
+          sqlx db create
+          sqlx migrate run
 
       - name: Create .env file
         run: cp .env.example .env
