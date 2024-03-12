@@ -61,7 +61,10 @@ jobs:
           components: clippy, rustfmt
 
       - name: Install SQLX CLI
-        run: cargo install sqlx-cli --no-default-features --features native-tls,sqlite
+        # Remove the force option
+        # after finding another
+        # solution
+        run: cargo install sqlx-cli --no-default-features --features native-tls,sqlite --force
 
       - name: Run migrations
         run: |
