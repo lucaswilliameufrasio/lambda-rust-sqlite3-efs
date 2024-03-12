@@ -43,9 +43,7 @@ async fn bootstrap() -> Arc<AppState> {
         .await
         .expect("Failed to connect to database");
 
-    let state = Arc::new(AppState { pool });
-
-    state
+    Arc::new(AppState { pool })
 }
 
 async fn shutdown_signal(state: Arc<AppState>) {
@@ -154,7 +152,7 @@ async fn load_users(
     .await;
 
     match users_result {
-        Ok(users) => Ok(Json(MultipleUsersResult { users: users })),
+        Ok(users) => Ok(Json(MultipleUsersResult { users })),
         Err(_) => Err(MyError::SomethingElseWentWrong),
     }
 }
@@ -176,18 +174,18 @@ async fn create_user(
     .await
     {
         Ok(user) => {
-            return Ok((
+            Ok((
                 StatusCode::CREATED,
                 Json(User {
                     id: user.get("id"),
                     name: payload.name,
                     email: payload.email,
                 }),
-            ));
+            ))
         }
         Err(error) => {
             println!("{}", error);
-            return Err(MyError::SomethingWentWrong);
+            Err(MyError::SomethingWentWrong)
         }
     }
 }
