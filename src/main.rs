@@ -173,16 +173,14 @@ async fn create_user(
     .fetch_one(&state.pool)
     .await
     {
-        Ok(user) => {
-            Ok((
-                StatusCode::CREATED,
-                Json(User {
-                    id: user.get("id"),
-                    name: payload.name,
-                    email: payload.email,
-                }),
-            ))
-        }
+        Ok(user) => Ok((
+            StatusCode::CREATED,
+            Json(User {
+                id: user.get("id"),
+                name: payload.name,
+                email: payload.email,
+            }),
+        )),
         Err(error) => {
             println!("{}", error);
             Err(MyError::SomethingWentWrong)
