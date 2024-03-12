@@ -1,6 +1,6 @@
 use axum::{
     extract::State,
-    http::StatusCode,
+    http::{StatusCode, Uri},
     response::{IntoResponse, Response},
     routing::{get, post},
     Json, Router,
@@ -96,8 +96,10 @@ async fn main() {
     // build our application with a route
     let app = Router::new()
         .route("/", get(root))
+        .route("/health-check", get(health_check))
         .route("/users", get(load_users))
         .route("/users", post(create_user))
+        .fallback(fallback_handler)
         .with_state(state.clone());
 
     set_default_env_var("PORT", "9989");
@@ -113,8 +115,25 @@ async fn main() {
         .unwrap();
 }
 
+async fn fallback_handler(uri: Uri) -> impl IntoResponse {
+    tracing::error!("No route for {}", uri);
+    (
+        StatusCode::NOT_FOUND,
+        Json(json!({ "message": format!("No route for {}", uri) })),
+    )
+}
+
 async fn root() -> impl IntoResponse {
-    (StatusCode::OK, Json(json!({ "message": "OK" })))
+    (
+        StatusCode::OK,
+        Json(
+            json!({ "message": "API created as an example of how to use EFS with AWS Lambda and store a SQLite database on it" }),
+        ),
+    )
+}
+
+async fn health_check() -> impl IntoResponse {
+    (StatusCode::OK, Json(json!({ "message": "ok" })))
 }
 
 #[derive(sqlx::FromRow)]
