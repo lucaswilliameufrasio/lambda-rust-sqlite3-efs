@@ -60,6 +60,12 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           components: clippy, rustfmt
 
+      - name: Run migrations
+        run: |
+          sqlx db create
+          sqlx migrate run
+          cargo sqlx prepare -- --all-targets --all-features
+
       - name: Lint
         run: |
           cargo fmt --all -- --check
@@ -67,11 +73,6 @@ jobs:
 
       - name: Install SQLX CLI
         run: cargo install sqlx-cli --no-default-features --features native-tls,sqlite
-
-      - name: Run migrations
-        run: |
-          sqlx db create
-          sqlx migrate run
 
       - name: Create .env file
         run: cp .env.example .env
