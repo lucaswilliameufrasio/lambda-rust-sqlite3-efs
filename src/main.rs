@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{Path, State},
     http::{StatusCode, Uri},
     response::{IntoResponse, Response},
     routing::{get, post},
@@ -88,6 +88,7 @@ fn app() -> Router<Arc<AppState>> {
         .route("/", get(root))
         .route("/health-check", get(health_check))
         .route("/users", get(load_users))
+        .route("/users/:id", get(find_user))
         .route("/users", post(create_user))
         .fallback(fallback_handler)
 }
@@ -176,6 +177,25 @@ async fn load_users(
         Err(_) => Err(APIError::SomethingElseWentWrong),
     }
 }
+
+async fn find_user(
+    Path(id): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<User>, APIError> {
+    let users_result = sqlx::query_as!(
+        User,
+        r#"select id as "id: i64", name, email from users WHERE users.id = $1"#,
+        id
+    )
+    .fetch_one(&state.pool)
+    .await;
+
+    match users_result {
+        Ok(user) => Ok(Json(user)),
+        Err(_) => Err(APIError::SomethingElseWentWrong),
+    }
+}
+
 
 async fn create_user(
     State(state): State<Arc<AppState>>,
@@ -351,6 +371,50 @@ mod tests {
 
         assert_eq!(expected_users.clone().len(), 1);
         assert_eq!(*expected_users.first().unwrap(), created_user);
+    }
+
+    #[sqlx::test]
+    async fn find_user_should_return_200(pool: SqlitePool) {
+        let state = Arc::new(AppState { pool });
+
+        let user_to_be_created = CreateUser {
+            name: nanoid::nanoid!().to_string(),
+            email: format!("{}@example.com", nanoid::nanoid!().to_string()),
+        };
+
+        let created_user_row = sqlx::query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING users.id, users.name, users.email;")
+            .bind(&user_to_be_created.name)
+            .bind(&user_to_be_created.email)
+            .fetch_one(&state.pool) // Execute the query using the acquired connection
+            .await
+            .unwrap();
+
+        let app = app().with_state(state.clone());
+
+        let created_user = User {
+            id: created_user_row.get("id"),
+            name: created_user_row.get("name"),
+            email: created_user_row.get("email"),
+        };
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("GET")
+                    .uri(format!("/users/{}", created_user.id))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let body: Value = serde_json::from_slice(&body).unwrap();
+        let user_found: User = serde_json::from_value(body).unwrap();
+
+        assert_eq!(user_found, created_user);
     }
 
     #[sqlx::test]
