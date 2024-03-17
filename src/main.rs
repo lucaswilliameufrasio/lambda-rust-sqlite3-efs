@@ -202,7 +202,7 @@ async fn create_user(
             }),
         )),
         Err(error) => {
-            println!("{}", error);
+            tracing::error!("Failed to create user {}", error);
             Err(APIError::SomethingWentWrong)
         }
     }
@@ -263,8 +263,6 @@ mod tests {
 
         let app = app().with_state(state.clone());
 
-        // `Router` implements `tower::Service<Request<Body>>` so we can
-        // call it like any tower service, no need to run an HTTP server.
         let response = app
             .oneshot(
                 Request::builder()
@@ -288,8 +286,6 @@ mod tests {
 
         let app = app().with_state(state.clone());
 
-        // `Router` implements `tower::Service<Request<Body>>` so we can
-        // call it like any tower service, no need to run an HTTP server.
         let response = app
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
             .await
@@ -329,47 +325,6 @@ mod tests {
             email: created_user_row.get("email"),
         };
 
-        // match sqlx::query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING users.id;")
-        // .bind(&user_to_be_created.name)
-        // .bind(&user_to_be_created.email)
-        // .fetch_one(&state.pool)
-        // .await
-        // {
-        //     Ok(user) => {
-        //         println!(
-        //             "User created successfully {:?}",
-        //             User {
-        //                 id: user.get("id"),
-        //                 name: user_to_be_created.clone().name,
-        //                 email: user_to_be_created.clone().email,
-        //             }
-        //         )
-        //     }
-        //     Err(error) => {
-        //         println!("Failed {}", error);
-        //     }
-        // };
-
-        // let oxi = sqlx::query!("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING users.id;", user_to_be_created.name, user_to_be_created.email).fetch_one(&state.pool).await.unwrap();
-
-        // println!("oxi {:?}", oxi);
-
-        // let users_result: Vec<User> = sqlx::query_as!(
-        //     UserFromQuery,
-        //     r#"select id as "id: i64", name, email from users"#
-        // )
-        // .fetch(&state.pool)
-        // .map_ok(UserFromQuery::into_user)
-        // .try_collect()
-        // .await
-        // .unwrap();
-
-        // println!("users_result {:?}", users_result);
-
-        println!("created_user.id {}", created_user.id);
-
-        // `Router` implements `tower::Service<Request<Body>>` so we can
-        // call it like any tower service, no need to run an HTTP server.
         let response = app
             .oneshot(
                 Request::builder()
@@ -387,24 +342,12 @@ mod tests {
         let body: Value = serde_json::from_slice(&body).unwrap();
         let multiple_users_result: MultipleUsersResult = serde_json::from_value(body).unwrap();
 
-        println!(
-            "multiple_users_result.users {:?}",
-            multiple_users_result.users
-        );
-
-        let is_created_user_on_list = multiple_users_result
-            .users
-            .iter()
-            .any(|user| user.id.eq(&created_user.id));
-        println!("is_created_user_on_list {:?}", is_created_user_on_list);
         let expected_users: Vec<User> = multiple_users_result
             .users
             .iter()
             .cloned()
             .filter(|user| user.id.eq(&created_user.id))
             .collect();
-
-        println!("expected_users {:?}", expected_users);
 
         assert_eq!(expected_users.clone().len(), 1);
         assert_eq!(*expected_users.first().unwrap(), created_user);
