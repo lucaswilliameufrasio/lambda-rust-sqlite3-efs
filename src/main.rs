@@ -196,7 +196,6 @@ async fn find_user(
     }
 }
 
-
 async fn create_user(
     State(state): State<Arc<AppState>>,
     // this argument tells axum to parse the request body
