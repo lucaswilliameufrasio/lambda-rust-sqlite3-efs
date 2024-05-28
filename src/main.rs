@@ -165,7 +165,7 @@ async fn load_users(
 ) -> Result<Json<MultipleUsersResult>, APIError> {
     let users_result = sqlx::query_as!(
         UserFromQuery,
-        r#"select id as "id: i64", name, email from users"#
+        r#"SELECT id as "id: i64", name, email FROM users"#
     )
     .fetch(&state.pool)
     .map_ok(UserFromQuery::into_user)
