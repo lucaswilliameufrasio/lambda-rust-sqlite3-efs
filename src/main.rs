@@ -184,7 +184,7 @@ async fn find_user(
 ) -> Result<Json<User>, APIError> {
     let users_result = sqlx::query_as!(
         User,
-        r#"select id as "id: i64", name, email from users WHERE users.id = $1"#,
+        r#"SELECT id as "id: i64", name, email FROM users WHERE users.id = $1"#,
         id
     )
     .fetch_one(&state.pool)
