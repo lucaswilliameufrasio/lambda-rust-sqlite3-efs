@@ -16,6 +16,9 @@ jobs:
 
     timeout-minutes: 20
 
+    env:
+      DATABASE_URL: "sqlite:users.db"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -56,12 +59,19 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: '1.83'
+          components: clippy, rustfmt
+
+      - name: Install SQLX CLI
+        run: sqlx database help || cargo install sqlx-cli --no-default-features --features native-tls,sqlite
+
+      - name: Run migrations
+        run: |
+          sqlx db create
+          sqlx migrate run
+          cargo sqlx prepare -- --all-targets --all-features
 
       - name: Create .env file
         run: cp .env.example .env
-  
-      - name: Start services
-        run: make setup-services
 
       - name: Build
         run: cargo build --verbose
