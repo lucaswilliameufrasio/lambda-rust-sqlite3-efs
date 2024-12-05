@@ -1,0 +1,72 @@
+name: CD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    name: Build and deploy function
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/            
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.83'
+
+      - name: Install Zig toolchain for Cargo Lambda
+        uses: korandoru/setup-zig@v1
+        with:
+          zig-version: 0.13.0
+          
+      # https://github.com/jaxxstorm/action-install-gh-release
+      - name: Install Cargo Lambda
+        uses: jaxxstorm/action-install-gh-release@v1.10.0
+        with:
+          repo: cargo-lambda/cargo-lambda
+          platform: linux # Other valid options: 'windows' or 'darwin'
+          arch: aarch64 # Other valid options for linux: 'aarch64'
+          cache: true
+
+      - name: Set up aws-cli
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build binary and zip
+        run: make prepare-deploy
+
+      - name: Update AWS Lambda function
+        run: ./scripts/deploy-functions.sh
+
+      
+

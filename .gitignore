@@ -13,3 +13,7 @@ Cargo.lock
 users.db*
 .env
 tfplan
+
+bootstrap.zip
+
+.DS_Store

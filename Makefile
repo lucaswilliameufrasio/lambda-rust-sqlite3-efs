@@ -6,33 +6,34 @@ init:
 	cargo install cargo-upgrades
 	sqlx db create
 	cargo install --path .
-PHONY: init
 
-watch:
-	cargo watch -x 'run'
-PHONY: watch
+	@if which asdf >/dev/null 2>&1; then \
+		asdf reshim rust; \
+	fi
+	
+	sqlx migrate run
+	cargo sqlx prepare
+PHONY: init
 
 set-env:
 	export DATABASE_URL="sqlite:users.db"
 PHONY: set-env
 
 dev:
-	docker run --rm --interactive --tty \
-        --workdir /app \
-        --volume ${CARGO_HOME:-$$HOME/.cargo}:/.cargo \
-        --volume $$PWD:/app \
-        --env CARGO_HOME=/.cargo \
-		--env PORT=9000 \
-  		-p 9000:9000 \
-  		ghcr.io/cargo-lambda/cargo-lambda cargo lambda watch
+	cargo watch -x 'run'
 .PHONY: dev
 
 build:
-	docker run --rm --interactive --tty \
-        --workdir /app \
-        --volume $${CARGO_HOME:-$$HOME/.cargo}:/.cargo \
-        --volume $$PWD:/app \
-        --env CARGO_HOME=/.cargo \
-  		ghcr.io/cargo-lambda/cargo-lambda cargo lambda build --release $(CARGO_LAMBDA_FLAGS)
-	cp  ./target/lambda/lambda-rust-sqlite3-efs/bootstrap bootstrap
+	cargo lambda build --release --arm64
 .PHONY: build
+
+prepare-deploy:
+	make build
+	@ cp ./target/lambda/lambda-rust-sqlite3-efs/bootstrap bootstrap
+	@ rm bootstrap.zip && zip bootstrap ./bootstrap
+.PHONY: prepare-deploy
+
+deploy:
+	make prepare-deploy
+	@ ./scripts/deploy-functions.sh
+.PHONY: deploy

@@ -325,8 +325,8 @@ mod tests {
         let state = Arc::new(AppState { pool });
 
         let user_to_be_created = CreateUser {
-            name: nanoid::nanoid!().to_string(),
-            email: format!("{}@example.com", nanoid::nanoid!().to_string()),
+            name: xid::new().to_string(),
+            email: format!("{}@example.com", xid::new().to_string()),
         };
 
         let created_user_row = sqlx::query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING users.id, users.name, users.email;")
@@ -377,8 +377,8 @@ mod tests {
         let state = Arc::new(AppState { pool });
 
         let user_to_be_created = CreateUser {
-            name: nanoid::nanoid!().to_string(),
-            email: format!("{}@example.com", nanoid::nanoid!().to_string()),
+            name: xid::new().to_string(),
+            email: format!("{}@example.com", xid::new().to_string()),
         };
 
         let created_user_row = sqlx::query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING users.id, users.name, users.email;")
@@ -423,8 +423,8 @@ mod tests {
         let app = app().with_state(state.clone());
 
         let user = CreateUser {
-            name: nanoid::nanoid!(),
-            email: format!("{}@example.com", nanoid::nanoid!()),
+            name: xid::new().to_string(),
+            email: format!("{}@example.com", xid::new().to_string()),
         };
 
         // `Router` implements `tower::Service<Request<Body>>` so we can
