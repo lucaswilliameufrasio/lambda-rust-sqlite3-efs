@@ -19,7 +19,8 @@ locals {
 
   region = data.aws_region.current.name
 
-  zip_path               = "../bootstrap.zip"
+  zip_path        = "../bootstrap-api.zip"
+  zip_path_writer = "../bootstrap-writer.zip"
 
   og_resources_of_this_project_arn = "arn:aws:logs:${local.region}:${local.account_id}:log-group:/aws/lambda/${local.prefix}*:*"
   log_groups_of_this_project_arn    = "arn:aws:logs:${local.region}:${local.account_id}:log-group:/aws/lambda/${local.prefix}*:*"
@@ -31,4 +32,12 @@ locals {
 
 output "lambda_function_url" {
   value = aws_lambda_function_url.api.function_url
+}
+
+output "sqs_queue_url" {
+  value = aws_sqs_queue.writer_queue.url
+}
+
+output "sqs_queue_arn" {
+  value = aws_sqs_queue.writer_queue.arn
 }

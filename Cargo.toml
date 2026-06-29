@@ -3,7 +3,17 @@ name = "lambda-rust-sqlite3-efs"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "lambda_rust_sqlite3_efs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "api"
+path = "src/main.rs"
+
+[[bin]]
+name = "writer"
+path = "src/writer_main.rs"
 
 [dependencies]
 axum = "0.7.9"
@@ -20,8 +30,11 @@ hyper-util = { version = "0.1", features = ["client", "http1", "client-legacy"] 
 http-body-util = "0.1.2"
 tower-http = { version = "0.5.2", features = ["trace"] }
 openssl = { version = "0.10.68", features = ["vendored"] }
+hex = "0.4"
+hostname = "0.4"
+aws-config = { version = "1.5", features = ["behavior-version-latest"] }
+aws-sdk-sqs = "1.57"
 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
 mime = "0.3"
-xid = "1.1.1"

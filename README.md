@@ -7,11 +7,10 @@ https://www.sqlite.org/faq.html#q5
 ## Requirements
 
 - [Cargo Lambda](https://www.cargo-lambda.info/guide/getting-started.html)
-- [Terraform](https://developer.hashicorp.com/terraform/install?product_intent=terraform)
+- [OpenTofu](https://opentofu.org/docs/intro/install/)
 
 
 ## Lambda layer used on this project to run the app without an API Gateway event adapter
-
 https://github.com/awslabs/aws-lambda-web-adapter
 
 ## How to run migrations
@@ -34,17 +33,17 @@ sqlx migrate revert
 sqlx migrate add -r add_i_dont_know_table
 ```
 
-## Just run the commands below to deploy the app after provisioning all infrastructure required using Terraform
+## Just run the commands below to deploy the app after provisioning all infrastructure required using OpenTofu
 ``` bash
 make prepare-deploy
 ./scripts/deploy-functions.sh
 ```
 
-## Commands to provision the infrastructure using Terraform
+## Commands to provision the infrastructure using OpenTofu
 
 ```bash
-terraform plan -out=./tfplan
-terraform apply ./tfplan
+tofu plan -out=./tfplan
+tofu apply ./tfplan
 ```
 
 ## Just use AWS DataSync to backup the database and be happy

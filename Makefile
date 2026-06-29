@@ -28,12 +28,35 @@ build:
 .PHONY: build
 
 prepare-deploy:
-	make build
-	@ cp ./target/lambda/lambda-rust-sqlite3-efs/bootstrap bootstrap
-	@ rm bootstrap.zip && zip bootstrap ./bootstrap
+	$(MAKE) build
+	@ cp ./target/lambda/api/bootstrap bootstrap-api
+	@ cp ./target/lambda/writer/bootstrap bootstrap-writer
+	@ rm -f bootstrap-api.zip bootstrap-writer.zip
+	@ zip bootstrap-api.zip ./bootstrap-api
+	@ zip bootstrap-writer.zip ./bootstrap-writer
+	@ rm -f bootstrap-api bootstrap-writer
 .PHONY: prepare-deploy
 
 deploy:
-	make prepare-deploy
+	$(MAKE) prepare-deploy
 	@ ./scripts/deploy-functions.sh
 .PHONY: deploy
+
+smoke-test:
+	cargo test --lib
+.PHONY: smoke-test
+
+floci-test:
+	@bash scripts/smoke-test.sh
+.PHONY: floci-test
+
+fmt:
+	cargo fmt --all -- --check
+.PHONY: fmt
+
+lint:
+	cargo clippy --all-targets --all-features -- -D warnings
+.PHONY: lint
+
+check: fmt lint test
+.PHONY: check

@@ -12,8 +12,11 @@ Cargo.lock
 **/bootstrap
 users.db*
 .env
-tfplan
+*.tfplan
+*.tfplan.json
 
-bootstrap.zip
+bootstrap*.zip
+bootstrap-api
+bootstrap-writer
 
 .DS_Store

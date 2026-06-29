@@ -19,5 +19,5 @@ deploy_function() {
 
 APP_PREFIX=lambda-rust-sqlite3-efs
 
-deploy_function "$APP_PREFIX-api" "${BASEDIR}/../bootstrap.zip"
-
+deploy_function "$APP_PREFIX-api" "${BASEDIR}/../bootstrap-api.zip"
+deploy_function "$APP_PREFIX-writer" "${BASEDIR}/../bootstrap-writer.zip"
