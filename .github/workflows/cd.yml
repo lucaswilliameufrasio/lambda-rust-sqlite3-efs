@@ -18,13 +18,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
       
       - name: Set up cargo cache
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         continue-on-error: false
         with:
           path: |
@@ -37,20 +37,20 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9  # v1
         with:
           toolchain: '1.96.0'
           targets: 'aarch64-unknown-linux-gnu'
 
       # https://github.com/marketplace/actions/setup-zig-compiler
       - name: Install Zig toolchain for Cargo Lambda
-        uses: mlugg/setup-zig@v2
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29  # v2.2.1
         with:
           version: 0.13.0
           
       # https://github.com/jaxxstorm/action-install-gh-release
       - name: Install Cargo Lambda
-        uses: jaxxstorm/action-install-gh-release@v1.10.0
+        uses: jaxxstorm/action-install-gh-release@25e24d2d23ae098373794ef1d6faecb48ee52da8  # v3.0.0
         with:
           repo: cargo-lambda/cargo-lambda
           platform: linux # Other valid options: 'windows' or 'darwin'
@@ -58,7 +58,7 @@ jobs:
           cache: true
 
       - name: Set up aws-cli
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b  # v6.2.1
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
